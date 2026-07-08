@@ -44,6 +44,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
 
   useEffect(() => {
     loadAllData();
+
+    const handleStorageChange = (e: StorageEvent) => {
+      const keysToWatch = ['med_shop_users', 'med_shop_resets', 'med_shop_logs', 'med_shop_orders', 'med_shop_inventory'];
+      if (e.key && keysToWatch.includes(e.key)) {
+        loadAllData();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, [activeTab]);
 
   const loadAllData = () => {
