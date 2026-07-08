@@ -40,6 +40,14 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
 
   useEffect(() => {
     loadData();
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'med_shop_orders' || e.key === 'med_shop_inventory') {
+        loadData();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const loadData = () => {
