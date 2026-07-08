@@ -158,10 +158,9 @@ export const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
       minHeight: '100vh',
       padding: '2rem'
     }}>
-      <div className="glass-panel" style={{
+      <div className="glass-panel auth-card" style={{
         maxWidth: '460px',
         width: '100%',
-        padding: '2.5rem',
         position: 'relative'
       }}>
         {/* Logo/Header */}
