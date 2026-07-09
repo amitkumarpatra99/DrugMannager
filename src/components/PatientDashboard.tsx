@@ -28,6 +28,14 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
 
   useEffect(() => {
     loadOrders();
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'med_shop_orders') {
+        loadOrders();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const loadOrders = () => {
