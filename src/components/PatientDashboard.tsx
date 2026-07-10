@@ -253,7 +253,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
     <div className="app-container">
       {/* Sidebar Navigation */}
       <aside className="sidebar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2.5rem' }}>
+        <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{
             background: 'var(--clr-primary-glow)',
             color: 'var(--clr-primary)',
@@ -269,7 +269,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
         </div>
 
         {/* Profile Card */}
-        <div style={{
+        <div className="sidebar-profile" style={{
           background: 'rgba(255,255,255,0.02)',
           border: '1px solid var(--border-muted)',
           borderRadius: 'var(--radius-md)',
@@ -310,7 +310,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
           </li>
         </ul>
 
-        <button onClick={onLogout} className="btn btn-secondary" style={{ width: '100%', marginTop: 'auto' }}>
+        <button onClick={onLogout} className="btn btn-secondary logout-btn" style={{ width: '100%' }}>
           <LogOut size={16} />
           Sign Out
         </button>
@@ -354,7 +354,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '2rem', alignItems: 'start' }}>
+        <div className="grid-split-1-1-3">
           
           {/* Upload and Schedule Panel */}
           <section className="glass-panel" style={{ padding: '2rem' }}>
