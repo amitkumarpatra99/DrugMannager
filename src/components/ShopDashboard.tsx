@@ -5,7 +5,7 @@ import {
 } from '../utils/storage';
 import { 
   Pill, Clock, CheckCircle, Plus, Search, Eye, ShoppingBag, 
-  X, ClipboardList, Check, Calendar, LogOut 
+  X, ClipboardList, Check, Calendar, LogOut, Menu
 } from 'lucide-react';
 
 interface ShopDashboardProps {
@@ -17,6 +17,7 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
   const [orders, setOrders] = useState<Order[]>([]);
   const [inventory, setInventory] = useState<Medicine[]>([]);
   const [activeTab, setActiveTab] = useState<'timeline' | 'inventory'>('timeline');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
   // Modals state
   const [selectedOrderForBill, setSelectedOrderForBill] = useState<Order | null>(null);
@@ -227,8 +228,27 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
 
   return (
     <div className="app-container">
+      {/* Mobile Top Header */}
+      <header className="mobile-header">
+        <button className="menu-toggle-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+        <div className="mobile-header-logo">
+          <Pill size={20} style={{ color: 'var(--clr-primary)' }} />
+          <span>Shop Panel</span>
+        </div>
+        <button onClick={onLogout} className="mobile-logout-btn" title="Sign Out">
+          <LogOut size={18} />
+        </button>
+      </header>
+
+      {/* Sidebar backdrop overlay */}
+      {isMobileMenuOpen && (
+        <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>
+      )}
+
       {/* Sidebar navigation */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{
             background: 'var(--clr-primary-glow)',
@@ -260,7 +280,7 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
           <li>
             <a 
               className={`nav-link ${activeTab === 'timeline' ? 'active' : ''}`}
-              onClick={() => setActiveTab('timeline')}
+              onClick={() => { setActiveTab('timeline'); setIsMobileMenuOpen(false); }}
             >
               <Calendar size={18} />
               Pickup Schedule & Queue
@@ -269,7 +289,7 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
           <li>
             <a 
               className={`nav-link ${activeTab === 'inventory' ? 'active' : ''}`}
-              onClick={() => setActiveTab('inventory')}
+              onClick={() => { setActiveTab('inventory'); setIsMobileMenuOpen(false); }}
             >
               <Pill size={18} />
               Inventory Catalog
@@ -637,7 +657,7 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
 
             <div className="modal-body">
               {/* Order prescription preview thumbnail */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-muted)', borderRadius: 'var(--radius-md)', padding: '1rem' }}>
+              <div className="prescription-meta-grid" style={{ marginBottom: '1.5rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-muted)', borderRadius: 'var(--radius-md)', padding: '1rem' }}>
                 <div style={{ textAlign: 'center' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>Prescription:</span>
                   <div style={{ 
@@ -691,7 +711,7 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
               }}>
                 <h4 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', color: 'var(--text-secondary)' }}>Select Medicine from Inventory</h4>
                 
-                <div style={{ display: 'flex', gap: '0.5rem', position: 'relative' }}>
+                <div className="billing-input-group" style={{ position: 'relative' }}>
                   <div style={{ flex: 1, position: 'relative' }}>
                     <input
                       type="text"
