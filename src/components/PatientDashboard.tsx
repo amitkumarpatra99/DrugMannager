@@ -3,7 +3,8 @@ import type { User, Order, OrderStatus } from '../types';
 import { getStoredOrders, setStoredOrders, addActivityLog } from '../utils/storage';
 import { 
   Upload, Clock, FileText, CheckCircle, AlertCircle, ShoppingBag, 
-  Trash2, Receipt, LogOut, User as UserIcon, Calendar, Printer 
+  Trash2, Receipt, LogOut, User as UserIcon, Calendar, Printer,
+  Menu, X
 } from 'lucide-react';
 
 interface PatientDashboardProps {
@@ -15,6 +16,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
   const [orders, setOrders] = useState<Order[]>([]);
   const [prescBase64, setPrescBase64] = useState<string>('');
   const [prescFileName, setPrescFileName] = useState<string>('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   
   // Pickup Times
   const [pickupStart, setPickupStart] = useState<string>('09:00');
@@ -251,8 +253,27 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
 
   return (
     <div className="app-container">
+      {/* Mobile Top Header */}
+      <header className="mobile-header">
+        <button className="menu-toggle-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+        <div className="mobile-header-logo">
+          <ShoppingBag size={20} style={{ color: 'var(--clr-primary)' }} />
+          <span>Patient Portal</span>
+        </div>
+        <button onClick={onLogout} className="mobile-logout-btn" title="Sign Out">
+          <LogOut size={18} />
+        </button>
+      </header>
+
+      {/* Sidebar backdrop overlay */}
+      {isMobileMenuOpen && (
+        <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>
+      )}
+
       {/* Sidebar Navigation */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{
             background: 'var(--clr-primary-glow)',
@@ -303,7 +324,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
 
         <ul className="nav-menu" style={{ flex: 1 }}>
           <li>
-            <a className="nav-link active">
+            <a className="nav-link active" onClick={() => setIsMobileMenuOpen(false)}>
               <ShoppingBag size={18} />
               My Orders & Upload
             </a>
@@ -448,7 +469,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
                   Specify the time range you will visit the pharmacy to pick up your package.
                 </p>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="time-range-grid">
                   <div style={{ flex: 1 }}>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Visit After:</span>
                     <input
@@ -493,7 +514,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
                 <ShoppingBag size={48} style={{ color: 'var(--text-muted)', marginBottom: '1rem', opacity: 0.5 }} />
                 <p>You have no submitted orders yet.</p>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                  Upload a prescription on the left to schedule a pickup.
+                  Upload a prescription to schedule a pickup.
                 </p>
               </div>
             ) : (
@@ -631,7 +652,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
                 </div>
 
                 {/* Details Meta */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+                <div className="invoice-meta-grid" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
                   <div>
                     <p><strong>Patient Name:</strong> {activeInvoiceOrder.patientName}</p>
                     <p><strong>Phone:</strong> {activeInvoiceOrder.patientPhone}</p>
