@@ -10,7 +10,7 @@ import {
   Users, Key, ShieldAlert, Terminal, Trash2, Edit, Save, 
   Download, Upload, CheckCircle, RefreshCw, LogOut, Search,
   ShoppingBag, Plus, Pill, TrendingUp, Eye, Receipt, 
-  Calendar, FileText, UserPlus, Shield, BarChart2
+  Calendar, FileText, UserPlus, Shield, BarChart2, Menu, X
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -20,6 +20,7 @@ interface AdminDashboardProps {
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'inventory' | 'orders' | 'resets' | 'logs' | 'database'>('dashboard');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   
   // Storage lists
   const [users, setUsers] = useState<User[]>([]);
@@ -471,8 +472,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
 
   return (
     <div className="app-container">
+      {/* Mobile Top Header */}
+      <header className="mobile-header">
+        <button className="menu-toggle-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+        <div className="mobile-header-logo">
+          <ShieldAlert size={20} style={{ color: 'var(--clr-primary)' }} />
+          <span>Admin Console</span>
+        </div>
+        <button onClick={onLogout} className="mobile-logout-btn" title="Sign Out">
+          <LogOut size={18} />
+        </button>
+      </header>
+
+      {/* Sidebar backdrop overlay */}
+      {isMobileMenuOpen && (
+        <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>
+      )}
+
       {/* Sidebar navigation */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{
             background: 'var(--clr-primary-glow)',
@@ -509,7 +529,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
           <li>
             <a 
               className={`nav-link ${activeTab === 'dashboard' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('dashboard'); }}
+              onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); }}
             >
               <BarChart2 size={18} />
               Overview & Analytics
@@ -518,7 +538,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
           <li>
             <a 
               className={`nav-link ${activeTab === 'users' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('users'); }}
+              onClick={() => { setActiveTab('users'); setIsMobileMenuOpen(false); }}
             >
               <Users size={18} />
               User Accounts ({users.length})
@@ -527,7 +547,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
           <li>
             <a 
               className={`nav-link ${activeTab === 'inventory' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('inventory'); }}
+              onClick={() => { setActiveTab('inventory'); setIsMobileMenuOpen(false); }}
             >
               <Pill size={18} />
               Medicine Inventory ({inventory.length})
@@ -536,7 +556,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
           <li>
             <a 
               className={`nav-link ${activeTab === 'orders' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('orders'); }}
+              onClick={() => { setActiveTab('orders'); setIsMobileMenuOpen(false); }}
             >
               <ShoppingBag size={18} />
               Customer Orders ({orders.length})
@@ -545,7 +565,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
           <li>
             <a 
               className={`nav-link ${activeTab === 'resets' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('resets'); }}
+              onClick={() => { setActiveTab('resets'); setIsMobileMenuOpen(false); }}
             >
               <Key size={18} />
               Password Resets ({pendingResetsCount})
@@ -554,7 +574,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
           <li>
             <a 
               className={`nav-link ${activeTab === 'logs' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('logs'); setLogPage(1); }}
+              onClick={() => { setActiveTab('logs'); setLogPage(1); setIsMobileMenuOpen(false); }}
             >
               <Terminal size={18} />
               System Activity Logs
@@ -563,7 +583,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
           <li>
             <a 
               className={`nav-link ${activeTab === 'database' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('database'); }}
+              onClick={() => { setActiveTab('database'); setIsMobileMenuOpen(false); }}
             >
               <Terminal size={18} style={{ color: 'var(--clr-warning)' }} />
               Database Console
@@ -1698,7 +1718,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
                 </div>
 
                 {/* Details Meta */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+                <div className="invoice-meta-grid" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
                   <div>
                     <p><strong>Patient Name:</strong> {activeInvoiceOrder.patientName}</p>
                     <p><strong>Phone:</strong> {activeInvoiceOrder.patientPhone}</p>
