@@ -151,18 +151,8 @@ export const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      padding: '2rem'
-    }}>
-      <div className="glass-panel auth-card" style={{
-        maxWidth: '460px',
-        width: '100%',
-        position: 'relative'
-      }}>
+    <div className="auth-container">
+      <div className="glass-panel auth-card auth-card-responsive">
         {/* Logo/Header */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{
@@ -256,7 +246,7 @@ export const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
         {/* Portal Role Toggle */}
         <div style={{ marginBottom: '1.5rem' }}>
           <span className="form-label" style={{ display: 'block', marginBottom: '0.5rem' }}>Portal Gateway</span>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <div className="auth-role-group">
             <label style={{
               flex: 1,
               display: 'flex',
