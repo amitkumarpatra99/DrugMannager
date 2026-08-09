@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { User, ResetRequest } from '../types';
 import { getStoredUsers, setStoredUsers, getStoredResets, setStoredResets, setStoredSession, addActivityLog } from '../utils/storage';
-import { Pill, Activity, ShieldAlert, KeyRound, Mail, UserPlus, LogIn } from 'lucide-react';
+import { Pill, Activity, ShieldAlert, KeyRound, Mail, UserPlus, LogIn, User as UserIcon, MapPin } from 'lucide-react';
 
 interface AuthProps {
   onLoginSuccess: (user: User) => void;
@@ -217,9 +217,14 @@ export const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
                 fontWeight: 600,
                 fontSize: '0.875rem',
                 cursor: 'pointer',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.35rem'
               }}
             >
+              <LogIn size={16} />
               Sign In
             </button>
             <button
@@ -235,9 +240,14 @@ export const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
                 fontWeight: 600,
                 fontSize: '0.875rem',
                 cursor: 'pointer',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.35rem'
               }}
             >
+              <UserPlus size={16} />
               Register
             </button>
           </div>
@@ -365,25 +375,33 @@ export const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
                 <>
                   <div className="form-group">
                     <label className="form-label">Full Name / Shop Name</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. John Doe / Care Pharmacy"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="form-input"
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <UserIcon size={16} style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-muted)' }} />
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. John Doe / Care Pharmacy"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="form-input"
+                        style={{ paddingLeft: '38px' }}
+                      />
+                    </div>
                   </div>
                   <div className="form-group">
                     <label className="form-label">Address / Shop Location</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Enter street, locality, city"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      className="form-input"
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <MapPin size={16} style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-muted)' }} />
+                      <input
+                        type="text"
+                        required
+                        placeholder="Enter street, locality, city"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="form-input"
+                        style={{ paddingLeft: '38px' }}
+                      />
+                    </div>
                   </div>
                 </>
               )}
