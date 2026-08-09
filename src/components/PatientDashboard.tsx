@@ -4,7 +4,7 @@ import { getStoredOrders, setStoredOrders, addActivityLog } from '../utils/stora
 import { 
   Upload, Clock, FileText, CheckCircle, AlertCircle, ShoppingBag, 
   Trash2, Receipt, LogOut, User as UserIcon, Calendar, Printer,
-  Menu, X
+  Menu, X, Sparkles
 } from 'lucide-react';
 
 interface PatientDashboardProps {
@@ -452,9 +452,13 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
                       fontSize: '0.75rem',
                       cursor: 'pointer',
                       fontWeight: 600,
-                      textDecoration: 'underline'
+                      textDecoration: 'underline',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem'
                     }}
                   >
+                    <Sparkles size={12} />
                     Generate Mock Rx Sheet
                   </button>
                 </div>
