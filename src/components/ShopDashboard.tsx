@@ -427,8 +427,9 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
                           <button
                             className="btn btn-primary"
                             onClick={() => handleUpdateOrderStatus(order.id, 'preparing')}
-                            style={{ padding: '0.4rem 1.25rem', fontSize: '0.85rem', marginLeft: 'auto' }}
+                            style={{ padding: '0.4rem 1.25rem', fontSize: '0.85rem', marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                           >
+                            <Check size={14} />
                             Accept & Prepare
                           </button>
                         )}
@@ -448,7 +449,7 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
                           <button
                             className="btn btn-success"
                             onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
-                            style={{ padding: '0.4rem 1.25rem', fontSize: '0.85rem', marginLeft: 'auto' }}
+                            style={{ padding: '0.4rem 1.25rem', fontSize: '0.85rem', marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                           >
                             <Check size={14} />
                             Mark Handed Over / Paid
@@ -458,8 +459,9 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
                         <button
                           className="btn btn-danger"
                           onClick={() => handleUpdateOrderStatus(order.id, 'cancelled')}
-                          style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }}
+                          style={{ padding: '0.4rem 1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                         >
+                          <X size={14} />
                           Cancel
                         </button>
                       </div>
@@ -784,8 +786,9 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
                     type="button" 
                     className="btn btn-primary"
                     onClick={handleAddMedicineToBill}
-                    style={{ padding: '0 1.25rem' }}
+                    style={{ padding: '0 1.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                   >
+                    <Plus size={14} />
                     Add
                   </button>
                 </div>
