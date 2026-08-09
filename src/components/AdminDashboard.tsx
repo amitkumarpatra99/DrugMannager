@@ -610,39 +610,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
 
         {/* Global Statistics */}
         <section className="metrics-grid">
-          <div className="glass-panel" style={{ padding: '1.25rem' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Total User Accounts</span>
-            <h3 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.25rem', color: 'var(--clr-primary)' }}>{users.length}</h3>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              {patientCount} Patients • {shopCount} Shops • {adminCount} Admins
-            </span>
+          <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Total User Accounts</span>
+              <h3 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.25rem', color: 'var(--clr-primary)' }}>{users.length}</h3>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {patientCount} Patients • {shopCount} Shops • {adminCount} Admins
+              </span>
+            </div>
+            <Users size={20} style={{ color: 'var(--clr-primary)', opacity: 0.8 }} />
           </div>
-          <div className="glass-panel" style={{ padding: '1.25rem' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Total Sales Revenue</span>
-            <h3 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.25rem', color: 'var(--clr-success)' }}>
-              ₹{totalRevenue.toFixed(2)}
-            </h3>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              From {completedOrders.length} fulfilled orders
-            </span>
+          <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Total Sales Revenue</span>
+              <h3 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.25rem', color: 'var(--clr-success)' }}>
+                ₹{totalRevenue.toFixed(2)}
+              </h3>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                From {completedOrders.length} fulfilled orders
+              </span>
+            </div>
+            <TrendingUp size={20} style={{ color: 'var(--clr-success)', opacity: 0.8 }} />
           </div>
-          <div className="glass-panel" style={{ padding: '1.25rem' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Inventory Health</span>
-            <h3 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.25rem', color: lowStockCount > 0 ? 'var(--clr-danger)' : 'var(--clr-primary)' }}>
-              {lowStockCount} Low Alert{lowStockCount !== 1 ? 's' : ''}
-            </h3>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              {totalMedicinesCount} total units in stock
-            </span>
+          <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Inventory Health</span>
+              <h3 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.25rem', color: lowStockCount > 0 ? 'var(--clr-danger)' : 'var(--clr-primary)' }}>
+                {lowStockCount} Low Alert{lowStockCount !== 1 ? 's' : ''}
+              </h3>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {totalMedicinesCount} total units in stock
+              </span>
+            </div>
+            <Pill size={20} style={{ color: lowStockCount > 0 ? 'var(--clr-danger)' : 'var(--clr-primary)', opacity: 0.8 }} />
           </div>
-          <div className="glass-panel" style={{ padding: '1.25rem' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Pending Password Resets</span>
-            <h3 style={{ fontSize: '2.0rem', fontWeight: 800, marginTop: '0.25rem', color: pendingResetsCount > 0 ? 'var(--clr-warning)' : 'var(--text-muted)' }}>
-              {pendingResetsCount}
-            </h3>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Awaiting credentials override
-            </span>
+          <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Pending Password Resets</span>
+              <h3 style={{ fontSize: '2.0rem', fontWeight: 800, marginTop: '0.25rem', color: pendingResetsCount > 0 ? 'var(--clr-warning)' : 'var(--text-muted)' }}>
+                {pendingResetsCount}
+              </h3>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                Awaiting credentials override
+              </span>
+            </div>
+            <Key size={20} style={{ color: pendingResetsCount > 0 ? 'var(--clr-warning)' : 'var(--text-muted)', opacity: 0.8 }} />
           </div>
         </section>
               {/* Dynamic Tab Body */}
@@ -788,7 +800,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
                   <RefreshCw size={14} /> Simulate Activity Events
                 </button>
                 
-                <button onClick={handleResetToDefaults} className="btn btn-danger" style={{ width: '100%', fontSize: '0.8rem', padding: '0.5rem' }}>
+                <button onClick={handleResetToDefaults} className="btn btn-danger" style={{ width: '100%', fontSize: '0.8rem', padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
+                  <Trash2 size={14} />
                   Wipe System Database
                 </button>
               </div>
