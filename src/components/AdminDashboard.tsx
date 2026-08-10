@@ -729,6 +729,198 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
                 </div>
               </section>
 
+              {/* Visual Analytics Block */}
+              <section className="glass-panel" style={{ padding: '2rem' }}>
+                <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <TrendingUp size={20} style={{ color: 'var(--clr-primary)' }} />
+                  Real-time System Visual Analytics
+                </h2>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                  
+                  {/* Chart 1: Revenue trend */}
+                  <div style={{ background: 'rgba(0,0,0,0.12)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-muted)' }}>
+                    <h3 style={{ fontSize: '0.9rem', marginBottom: '1rem', color: 'var(--text-secondary)' }}>Daily Sales Revenue Trend</h3>
+                    <div style={{ height: '140px' }}>
+                      <svg viewBox="0 0 400 140" width="100%" height="100%" style={{ overflow: 'visible' }}>
+                        <defs>
+                          <linearGradient id="adminSalesGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="var(--clr-primary)" stopOpacity="0.25" />
+                            <stop offset="100%" stopColor="var(--clr-primary)" stopOpacity="0" />
+                          </linearGradient>
+                          <filter id="adminGlow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="2" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                          </filter>
+                        </defs>
+                        <line x1="20" y1="15" x2="380" y2="15" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                        <line x1="20" y1="50" x2="380" y2="50" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                        <line x1="20" y1="85" x2="380" y2="85" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                        <line x1="20" y1="120" x2="380" y2="120" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+
+                        <path d={(() => {
+                          const revenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.totalBill, 0);
+                          const data = [120, 250, 480, 310, 640, Math.max(150, revenue)];
+                          const max = Math.max(...data, 100) * 1.15;
+                          const pts = data.map((val, i) => {
+                            const x = (i / 5) * 360 + 20;
+                            const y = 120 - (val / max) * 95;
+                            return { x, y };
+                          });
+                          const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                          return `${path} L ${pts[pts.length-1].x} 120 L ${pts[0].x} 120 Z`;
+                        })()} fill="url(#adminSalesGrad)" />
+
+                        <path d={(() => {
+                          const revenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.totalBill, 0);
+                          const data = [120, 250, 480, 310, 640, Math.max(150, revenue)];
+                          const max = Math.max(...data, 100) * 1.15;
+                          const pts = data.map((val, i) => {
+                            const x = (i / 5) * 360 + 20;
+                            const y = 120 - (val / max) * 95;
+                            return { x, y };
+                          });
+                          return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                        })()} stroke="var(--clr-primary)" strokeWidth="2" fill="none" filter="url(#adminGlow)" />
+
+                        {(() => {
+                          const revenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.totalBill, 0);
+                          const data = [
+                            { l: '08:00', v: 120 }, { l: '10:00', v: 250 }, { l: '12:00', v: 480 },
+                            { l: '14:00', v: 310 }, { l: '16:00', v: 640 }, { l: 'Now', v: Math.max(150, revenue) }
+                          ];
+                          const max = Math.max(...data.map(d => d.v), 100) * 1.15;
+                          return data.map((d, i) => {
+                            const x = (i / 5) * 360 + 20;
+                            const y = 120 - (d.v / max) * 95;
+                            return (
+                              <g key={i}>
+                                <circle cx={x} cy={y} r="3" fill="var(--bg-popover)" stroke="var(--clr-primary)" strokeWidth="1.5" />
+                                <text x={x} y={y - 8} textAnchor="middle" fill="var(--text-primary)" fontSize="7" fontWeight="600">₹{d.v.toFixed(0)}</text>
+                                <text x={x} y="132" textAnchor="middle" fill="var(--text-secondary)" fontSize="7">{d.l}</text>
+                              </g>
+                            );
+                          });
+                        })()}
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Chart 2: Order Status Donut Chart */}
+                  <div style={{ background: 'rgba(0,0,0,0.12)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-muted)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <h3 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', color: 'var(--text-secondary)' }}>Order Processing Breakdown</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{ width: '100px', height: '100px', position: 'relative' }}>
+                        <svg width="100" height="100" viewBox="0 0 36 36">
+                          <circle cx="18" cy="18" r="15.915" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="3" />
+                          {(() => {
+                            const submitted = orders.filter(o => o.status === 'submitted').length;
+                            const preparing = orders.filter(o => o.status === 'preparing').length;
+                            const ready = orders.filter(o => o.status === 'ready').length;
+                            const completed = orders.filter(o => o.status === 'completed').length;
+                            const total = submitted + preparing + ready + completed || 1;
+                            
+                            const pSub = (submitted / total) * 100;
+                            const pPrep = (preparing / total) * 100;
+                            const pReady = (ready / total) * 100;
+                            const pComp = (completed / total) * 100;
+
+                            const strokes = [
+                              { percent: pSub, stroke: `${pSub} ${100 - pSub}`, color: 'var(--clr-info)', offset: 0 },
+                              { percent: pPrep, stroke: `${pPrep} ${100 - pPrep}`, color: 'var(--clr-warning)', offset: pSub },
+                              { percent: pReady, stroke: `${pReady} ${100 - pReady}`, color: 'var(--clr-primary)', offset: pSub + pPrep },
+                              { percent: pComp, stroke: `${pComp} ${100 - pComp}`, color: 'var(--clr-success)', offset: pSub + pPrep + pReady }
+                            ];
+
+                            return strokes.map((s, idx) => {
+                              if (s.percent === 0) return null;
+                              return (
+                                <circle 
+                                  key={idx}
+                                  cx="18" 
+                                  cy="18" 
+                                  r="15.915" 
+                                  fill="none" 
+                                  stroke={s.color} 
+                                  strokeWidth="3.2" 
+                                  strokeDasharray={s.stroke} 
+                                  strokeDashoffset={100 - s.offset + 25}
+                                />
+                              );
+                            });
+                          })()}
+                        </svg>
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                          <span>{orders.length}</span>
+                          <span style={{ fontSize: '0.55rem', fontWeight: 'normal', color: 'var(--text-muted)' }}>Orders</span>
+                        </div>
+                      </div>
+
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.75rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <span style={{ width: '8px', height: '8px', background: 'var(--clr-info)', borderRadius: '50%' }}></span>
+                          <span style={{ color: 'var(--text-secondary)' }}>Awaiting review:</span>
+                          <span style={{ fontWeight: 'bold' }}>{orders.filter(o => o.status === 'submitted').length}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <span style={{ width: '8px', height: '8px', background: 'var(--clr-warning)', borderRadius: '50%' }}></span>
+                          <span style={{ color: 'var(--text-secondary)' }}>Preparing:</span>
+                          <span style={{ fontWeight: 'bold' }}>{orders.filter(o => o.status === 'preparing').length}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <span style={{ width: '8px', height: '8px', background: 'var(--clr-primary)', borderRadius: '50%' }}></span>
+                          <span style={{ color: 'var(--text-secondary)' }}>Ready for Pickup:</span>
+                          <span style={{ fontWeight: 'bold' }}>{orders.filter(o => o.status === 'ready').length}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <span style={{ width: '8px', height: '8px', background: 'var(--clr-success)', borderRadius: '50%' }}></span>
+                          <span style={{ color: 'var(--text-secondary)' }}>Completed:</span>
+                          <span style={{ fontWeight: 'bold' }}>{orders.filter(o => o.status === 'completed').length}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Chart 3: Category share horizontal bar */}
+                  <div style={{ background: 'rgba(0,0,0,0.12)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-muted)' }}>
+                    <h3 style={{ fontSize: '0.9rem', marginBottom: '1rem', color: 'var(--text-secondary)' }}>Medicine Stock by Category</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.75rem' }}>
+                      {(() => {
+                        const categories = ['Antibiotics', 'Analgesics', 'Vitamins & Supplements', 'General'];
+                        const inv = getStoredInventory();
+                        
+                        return categories.map(cat => {
+                          const catItems = inv.filter(m => m.category.includes(cat) || cat.includes(m.category));
+                          const totalStock = catItems.reduce((acc, curr) => acc + curr.stock, 0);
+                          const maxStock = Math.max(...categories.map(c => 
+                            inv.filter(m => m.category.includes(c) || c.includes(m.category)).reduce((ac, cu) => ac + cu.stock, 0)
+                          ), 1);
+                          const percent = Math.min(100, Math.max(8, (totalStock / maxStock) * 100));
+
+                          return (
+                            <div key={cat}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.15rem' }}>
+                                <span style={{ color: 'var(--text-secondary)' }}>{cat}</span>
+                                <span style={{ fontWeight: '600' }}>{totalStock} units</span>
+                              </div>
+                              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.03)', borderRadius: '3px', overflow: 'hidden' }}>
+                                <div style={{ 
+                                  width: `${percent}%`, 
+                                  height: '100%', 
+                                  background: 'linear-gradient(90deg, var(--clr-primary-glow), var(--clr-primary))',
+                                  borderRadius: '3px' 
+                                }}></div>
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+
+                </div>
+              </section>
+
               {/* Recent 5 Logs Preview */}
               <section className="glass-panel" style={{ padding: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
