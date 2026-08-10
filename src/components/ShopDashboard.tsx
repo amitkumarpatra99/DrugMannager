@@ -1225,6 +1225,7 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
             </form>
           </div>
         </div>
+      )}
       {/* Edit Medicine Modal */}
       {editingMed && (
         <div className="modal-overlay" onClick={() => setEditingMed(null)}>
