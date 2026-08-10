@@ -1225,6 +1225,93 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
             </form>
           </div>
         </div>
+      {/* Edit Medicine Modal */}
+      {editingMed && (
+        <div className="modal-overlay" onClick={() => setEditingMed(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+            <div className="modal-header">
+              <h3 style={{ fontSize: '1.1rem' }}>Edit Medicine Details</h3>
+              <button onClick={() => setEditingMed(null)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '1.25rem', cursor: 'pointer' }}>
+                &times;
+              </button>
+            </div>
+            
+            <form onSubmit={handleSaveMedEdit}>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label className="form-label">Medicine Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editMedName}
+                    onChange={(e) => setEditMedName(e.target.value)}
+                    className="form-input"
+                  />
+                </div>
+                
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label className="form-label">Price (₹)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      min="1"
+                      value={editMedPrice}
+                      onChange={(e) => setEditMedPrice(parseFloat(e.target.value) || 0)}
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label className="form-label">Stock Quantity</label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      value={editMedStock}
+                      onChange={(e) => setEditMedStock(parseInt(e.target.value, 10) || 0)}
+                      className="form-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Dosage Instructions</label>
+                  <input
+                    type="text"
+                    required
+                    value={editMedDosage}
+                    onChange={(e) => setEditMedDosage(e.target.value)}
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Category</label>
+                  <select
+                    value={editMedCategory}
+                    onChange={(e) => setEditMedCategory(e.target.value)}
+                    className="form-input"
+                    style={{ background: 'var(--bg-popover)' }}
+                  >
+                    <option value="Analgesics">Analgesics (Pain Relievers)</option>
+                    <option value="Antibiotics">Antibiotics</option>
+                    <option value="Antihistamines">Antihistamines (Allergies)</option>
+                    <option value="Antacids">Antacids (Stomach)</option>
+                    <option value="Cardiovascular">Cardiovascular</option>
+                    <option value="Vitamins & Supplements">Vitamins & Supplements</option>
+                    <option value="Cough & Cold">Cough & Cold</option>
+                    <option value="General">General Care</option>
+                  </select>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setEditingMed(null)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
     </div>
