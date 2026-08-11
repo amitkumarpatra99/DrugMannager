@@ -461,256 +461,476 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
           </div>
         )}
 
-        <div className="grid-split-1-1-3">
-          
-          {/* Upload and Schedule Panel */}
+        {activeTab === 'catalog' ? (
+          /* Medicine Catalog Search Tab */
           <section className="glass-panel" style={{ padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <FileText size={20} style={{ color: 'var(--clr-primary)' }} />
-              Submit New Prescription
-            </h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Pill size={20} style={{ color: 'var(--clr-primary)' }} />
+                Pharmacy Medicine Catalog
+              </h2>
+            </div>
 
-            <form onSubmit={handleOrderSubmit}>
-              {/* Prescription File Picker */}
-              <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                <span className="form-label">Prescription Document / Image</span>
-                
-                <div style={{
-                  border: '2px dashed var(--border-muted)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '1.5rem',
-                  textAlign: 'center',
-                  background: 'rgba(0,0,0,0.15)',
-                  position: 'relative',
-                  cursor: 'pointer',
-                  transition: 'border 0.2s'
-                }}
-                onDragOver={(e) => { e.preventDefault(); }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  const file = e.dataTransfer.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onload = () => setPrescBase64(reader.result as string);
-                    reader.readAsDataURL(file);
-                    setPrescFileName(file.name);
-                  }
-                }}
-                >
-                  <input
-                    type="file"
-                    accept="image/*,application/pdf"
-                    onChange={handleFileChange}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      opacity: 0,
-                      cursor: 'pointer'
-                    }}
-                  />
-                  <Upload size={32} style={{ color: 'var(--text-secondary)', marginBottom: '0.75rem' }} />
-                  {prescFileName ? (
-                    <div>
-                      <p style={{ fontSize: '0.9rem', color: 'var(--clr-primary)', fontWeight: 600 }}>{prescFileName}</p>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Click or drag to replace file</span>
+            <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
+              <Search size={16} style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-muted)' }} />
+              <input
+                type="text"
+                placeholder="Search medicines by name, dosage or category..."
+                value={catalogSearch}
+                onChange={(e) => setCatalogSearch(e.target.value)}
+                className="form-input"
+                style={{ paddingLeft: '38px' }}
+              />
+            </div>
+
+            <div className="table-container">
+              <table className="custom-table">
+                <thead>
+                  <tr>
+                    <th>Medicine Name</th>
+                    <th>Category</th>
+                    <th>Dosage Instructions</th>
+                    <th style={{ textAlign: 'right' }}>Price (₹)</th>
+                    <th style={{ textAlign: 'center' }}>Availability</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {getStoredInventory()
+                    .filter(med => 
+                      med.name.toLowerCase().includes(catalogSearch.toLowerCase()) || 
+                      med.category.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+                      med.dosage.toLowerCase().includes(catalogSearch.toLowerCase())
+                    )
+                    .map((med) => (
+                      <tr key={med.id}>
+                        <td style={{ fontWeight: 600 }}>{med.name}</td>
+                        <td><span className="badge badge-neutral" style={{ textTransform: 'none' }}>{med.category}</span></td>
+                        <td style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{med.dosage}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 600 }}>₹{med.price.toFixed(2)}</td>
+                        <td style={{ textAlign: 'center' }}>
+                          {med.stock > 10 ? (
+                            <span className="badge badge-success">In Stock</span>
+                          ) : med.stock > 0 ? (
+                            <span className="badge badge-warning">Low Stock</span>
+                          ) : (
+                            <span className="badge badge-danger">Out of Stock</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  {getStoredInventory().filter(med => 
+                    med.name.toLowerCase().includes(catalogSearch.toLowerCase()) || 
+                    med.category.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+                    med.dosage.toLowerCase().includes(catalogSearch.toLowerCase())
+                  ).length === 0 && (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '2rem' }}>
+                        No medicines match your search criteria.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ) : (
+          /* Main Workspace - Orders List and Upload */
+          <div className="grid-split-1-1-3">
+            
+            {/* Upload and Schedule Panel */}
+            <section className="glass-panel" style={{ padding: '2rem' }}>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FileText size={20} style={{ color: 'var(--clr-primary)' }} />
+                Submit New Prescription
+              </h2>
+
+              <form onSubmit={handleOrderSubmit}>
+                {/* Prescription File Picker */}
+                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                  <span className="form-label">Prescription Document / Image</span>
+                  
+                  <div style={{
+                    border: '2px dashed var(--border-muted)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '1.5rem',
+                    textAlign: 'center',
+                    background: 'rgba(0,0,0,0.15)',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    transition: 'border 0.2s'
+                  }}
+                  onDragOver={(e) => { e.preventDefault(); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        setPrescBase64(reader.result as string);
+                        runAIScan(file.name);
+                      };
+                      reader.readAsDataURL(file);
+                      setPrescFileName(file.name);
+                    }
+                  }}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      onChange={handleFileChange}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        opacity: 0,
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <Upload size={32} style={{ color: 'var(--text-secondary)', marginBottom: '0.75rem' }} />
+                    {prescFileName ? (
+                      <div>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--clr-primary)', fontWeight: 600 }}>{prescFileName}</p>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Click or drag to replace file</span>
+                      </div>
+                    ) : (
+                      <div>
+                        <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Drag & drop image here or click to browse</p>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>JPEG, PNG up to 2MB</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Mock generation helper */}
+                  <div style={{ textAlign: 'center', marginTop: '0.75rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Don't have an image? </span>
+                    <button
+                      type="button"
+                      onClick={generateMockPrescription}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--clr-primary)',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        textDecoration: 'underline',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.25rem'
+                      }}
+                    >
+                      <Sparkles size={12} />
+                      Generate Mock Rx Sheet
+                    </button>
+                  </div>
+
+                  {/* AI Scanner Display */}
+                  {isScanning && (
+                    <div style={{
+                      position: 'relative',
+                      height: '140px',
+                      background: 'rgba(0, 242, 254, 0.03)',
+                      border: '1px solid var(--clr-primary-glow)',
+                      borderRadius: 'var(--radius-md)',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginTop: '1.25rem'
+                    }}>
+                      <div className="scanning-bar"></div>
+                      <div style={{ textAlign: 'center', zIndex: 10 }}>
+                        <Sparkles size={20} className="sparkle-animation" style={{ color: 'var(--clr-primary)', marginBottom: '0.35rem' }} />
+                        <p style={{ fontSize: '0.85rem', color: 'var(--clr-primary)', fontWeight: 600 }}>AI Scanner Active</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Extracting drug names & matching catalog...</p>
+                      </div>
                     </div>
-                  ) : (
-                    <div>
-                      <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Drag & drop image here or click to browse</p>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>JPEG, PNG up to 2MB</span>
+                  )}
+
+                  {/* Scanner Match Results */}
+                  {!isScanning && prescBase64 && scannedItems.length > 0 && (
+                    <div style={{
+                      marginTop: '1.25rem',
+                      background: 'rgba(0, 242, 254, 0.02)',
+                      border: '1px solid rgba(0, 242, 254, 0.15)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '1rem'
+                    }}>
+                      <h4 style={{ fontSize: '0.875rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.5rem', color: 'var(--clr-primary)' }}>
+                        <Sparkles size={14} />
+                        AI Scan Match Results
+                      </h4>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
+                        The items below were detected. Adjust quantities as per prescription:
+                      </p>
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {scannedItems.map((item, idx) => {
+                          const isChecked = selectedScanItemIds.includes(item.medicineId);
+                          return (
+                            <div key={item.medicineId} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              background: 'rgba(0,0,0,0.15)',
+                              padding: '0.4rem 0.6rem',
+                              borderRadius: 'var(--radius-sm)',
+                              border: `1px solid ${isChecked ? 'rgba(0, 242, 254, 0.1)' : 'var(--border-muted)'}`
+                            }}>
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', flex: 1, userSelect: 'none' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    if (isChecked) {
+                                      setSelectedScanItemIds(selectedScanItemIds.filter(id => id !== item.medicineId));
+                                    } else {
+                                      setSelectedScanItemIds([...selectedScanItemIds, item.medicineId]);
+                                    }
+                                  }}
+                                  style={{ accentColor: 'var(--clr-primary)' }}
+                                />
+                                <span style={{ fontSize: '0.825rem', fontWeight: 500, color: isChecked ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{item.name}</span>
+                              </label>
+
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>₹{item.price.toFixed(2)}</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={item.quantity}
+                                  onChange={(e) => {
+                                    const val = Math.max(1, parseInt(e.target.value, 10) || 1);
+                                    const updated = [...scannedItems];
+                                    updated[idx].quantity = val;
+                                    setScannedItems(updated);
+                                  }}
+                                  style={{
+                                    width: '48px',
+                                    padding: '0.15rem 0.25rem',
+                                    background: 'rgba(0,0,0,0.3)',
+                                    border: '1px solid var(--border-muted)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    color: '#fff',
+                                    fontSize: '0.75rem',
+                                    textAlign: 'center'
+                                  }}
+                                  disabled={!isChecked}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        borderTop: '1px dashed var(--border-muted)',
+                        marginTop: '0.75rem',
+                        paddingTop: '0.5rem',
+                        fontSize: '0.8rem'
+                      }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Est. Prescription Cost:</span>
+                        <span style={{ fontWeight: 'bold', color: 'var(--clr-primary)' }}>
+                          ₹{scannedItems
+                            .filter(it => selectedScanItemIds.includes(it.medicineId))
+                            .reduce((sum, it) => sum + (it.price * it.quantity), 0)
+                            .toFixed(2)}
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
-                
-                {/* Mock generation helper */}
-                <div style={{ textAlign: 'center', marginTop: '0.75rem' }}>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Don't have an image? </span>
-                  <button
-                    type="button"
-                    onClick={generateMockPrescription}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--clr-primary)',
-                      fontSize: '0.75rem',
-                      cursor: 'pointer',
-                      fontWeight: 600,
-                      textDecoration: 'underline',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.25rem'
-                    }}
-                  >
-                    <Sparkles size={12} />
-                    Generate Mock Rx Sheet
-                  </button>
-                </div>
-              </div>
 
-              {/* Timing Selection */}
-              <div className="form-group" style={{ marginBottom: '2rem' }}>
-                <span className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <Clock size={16} />
-                  Offline Store Visiting Window
-                </span>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                  Specify the time range you will visit the pharmacy to pick up your package.
-                </p>
-                <div className="time-range-grid">
-                  <div style={{ flex: 1 }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Visit After:</span>
-                    <input
-                      type="time"
-                      required
-                      value={pickupStart}
-                      onChange={(e) => setPickupStart(e.target.value)}
-                      className="form-input"
-                      style={{ marginTop: '0.25rem' }}
-                    />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Visit Before:</span>
-                    <input
-                      type="time"
-                      required
-                      value={pickupEnd}
-                      onChange={(e) => setPickupEnd(e.target.value)}
-                      className="form-input"
-                      style={{ marginTop: '0.25rem' }}
-                    />
+                {/* Timing Selection */}
+                <div className="form-group" style={{ marginBottom: '2rem' }}>
+                  <span className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Clock size={16} />
+                    Offline Store Visiting Window
+                  </span>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                    Specify the time range you will visit the pharmacy to pick up your package.
+                  </p>
+                  <div className="time-range-grid">
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Visit After:</span>
+                      <input
+                        type="time"
+                        required
+                        value={pickupStart}
+                        onChange={(e) => setPickupStart(e.target.value)}
+                        className="form-input"
+                        style={{ marginTop: '0.25rem' }}
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Visit Before:</span>
+                      <input
+                        type="time"
+                        required
+                        value={pickupEnd}
+                        onChange={(e) => setPickupEnd(e.target.value)}
+                        className="form-input"
+                        style={{ marginTop: '0.25rem' }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-                <CheckCircle size={18} />
-                Submit Prescription & Schedule
-              </button>
-            </form>
-          </section>
+                <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
+                  <CheckCircle size={18} />
+                  Submit Prescription & Schedule
+                </button>
+              </form>
+            </section>
 
-          {/* Active Orders Track list */}
-          <div>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Clock size={20} style={{ color: 'var(--clr-primary)' }} />
-              Active Orders & Pickups ({orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').length})
-            </h2>
+            {/* Active Orders Track list */}
+            <div>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Clock size={20} style={{ color: 'var(--clr-primary)' }} />
+                Active Orders & Pickups ({orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').length})
+              </h2>
 
-            {orders.length === 0 ? (
-              <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                <ShoppingBag size={48} style={{ color: 'var(--text-muted)', marginBottom: '1rem', opacity: 0.5 }} />
-                <p>You have no submitted orders yet.</p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                  Upload a prescription to schedule a pickup.
-                </p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {orders.map((order) => {
-                  const isActive = order.status !== 'completed' && order.status !== 'cancelled';
-                  
-                  return (
-                    <div 
-                      key={order.id} 
-                      className="glass-panel" 
-                      style={{ 
-                        padding: '1.5rem',
-                        opacity: isActive ? 1 : 0.7,
-                        borderLeft: `4px solid ${
-                          order.status === 'completed' ? 'var(--clr-success)' :
-                          order.status === 'cancelled' ? 'var(--clr-danger)' :
-                          order.status === 'ready' ? 'var(--clr-primary)' : 'var(--clr-warning)'
-                        }`
-                      }}
-                    >
-                      {/* Order Header */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>{order.id}</span>
-                            <span className={`badge ${
-                              order.status === 'submitted' ? 'badge-info' :
-                              order.status === 'preparing' ? 'badge-warning' :
-                              order.status === 'ready' ? 'badge-success' :
-                              order.status === 'completed' ? 'badge-neutral' : 'badge-danger'
-                            }`}>
-                              {order.status === 'submitted' && 'Awaiting Review'}
-                              {order.status === 'preparing' && 'Preparing Medicines'}
-                              {order.status === 'ready' && 'Ready for Pickup'}
-                              {order.status === 'completed' && 'Completed'}
-                              {order.status === 'cancelled' && 'Cancelled'}
+              {orders.length === 0 ? (
+                <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  <ShoppingBag size={48} style={{ color: 'var(--text-muted)', marginBottom: '1rem', opacity: 0.5 }} />
+                  <p>You have no submitted orders yet.</p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                    Upload a prescription to schedule a pickup.
+                  </p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {orders.map((order) => {
+                    const isActive = order.status !== 'completed' && order.status !== 'cancelled';
+                    
+                    return (
+                      <div 
+                        key={order.id} 
+                        className="glass-panel" 
+                        style={{ 
+                          padding: '1.5rem',
+                          opacity: isActive ? 1 : 0.7,
+                          borderLeft: `4px solid ${
+                            order.status === 'completed' ? 'var(--clr-success)' :
+                            order.status === 'cancelled' ? 'var(--clr-danger)' :
+                            order.status === 'ready' ? 'var(--clr-primary)' : 'var(--clr-warning)'
+                          }`
+                        }}
+                      >
+                        {/* Order Header */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>{order.id}</span>
+                              <span className={`badge ${
+                                order.status === 'submitted' ? 'badge-info' :
+                                order.status === 'preparing' ? 'badge-warning' :
+                                order.status === 'ready' ? 'badge-success' :
+                                order.status === 'completed' ? 'badge-neutral' : 'badge-danger'
+                              }`}>
+                                {order.status === 'submitted' && 'Awaiting Review'}
+                                {order.status === 'preparing' && 'Preparing Medicines'}
+                                {order.status === 'ready' && 'Ready for Pickup'}
+                                {order.status === 'completed' && 'Completed'}
+                                {order.status === 'cancelled' && 'Cancelled'}
+                              </span>
+                            </div>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Created: {order.createdAt}</span>
+                          </div>
+
+                          {/* Visited Window */}
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>Pickup Schedule:</span>
+                            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--clr-primary)', display: 'flex', alignItems: 'center', gap: '0.25rem', justifyContent: 'flex-end' }}>
+                              <Calendar size={14} />
+                              {order.pickupStart} - {order.pickupEnd}
                             </span>
                           </div>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Created: {order.createdAt}</span>
                         </div>
 
-                        {/* Visited Window */}
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>Pickup Schedule:</span>
-                          <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--clr-primary)', display: 'flex', alignItems: 'center', gap: '0.25rem', justifyContent: 'flex-end' }}>
-                            <Calendar size={14} />
-                            {order.pickupStart} - {order.pickupEnd}
-                          </span>
+                        {/* Stepper for Active, details for inactive */}
+                        {renderStatusStepper(order.status)}
+
+                        {/* Suggested Matched Items list */}
+                        {order.suggestedItems && order.suggestedItems.length > 0 && (order.status === 'submitted' || order.status === 'preparing') && (
+                          <div style={{
+                            background: 'rgba(0, 242, 254, 0.02)',
+                            border: '1px solid rgba(0, 242, 254, 0.1)',
+                            borderRadius: 'var(--radius-md)',
+                            padding: '0.75rem 1rem',
+                            marginBottom: '1rem',
+                            fontSize: '0.85rem'
+                          }}>
+                            <span style={{ color: 'var(--clr-primary)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.4rem', fontWeight: 600 }}>
+                              <Sparkles size={12} />
+                              Requested Medicines (AI Auto-Match):
+                            </span>
+                            {order.suggestedItems.map((it, idx) => (
+                              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.15rem 0' }}>
+                                <span style={{ color: 'var(--text-primary)' }}>{it.name} x {it.quantity}</span>
+                                <span style={{ color: 'var(--text-secondary)' }}>₹{(it.price * it.quantity).toFixed(2)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Action buttons inside card */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', borderTop: '1px solid var(--border-muted)', paddingTop: '1rem' }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // View prescription modal
+                              setActiveInvoiceOrder(order);
+                            }}
+                            className="btn btn-secondary"
+                            style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}
+                          >
+                            <FileText size={14} />
+                            View Prescription Sheet
+                          </button>
+
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            {/* Cancel button if just submitted */}
+                            {order.status === 'submitted' && (
+                              <button
+                                type="button"
+                                onClick={() => handleCancelOrder(order.id)}
+                                className="btn btn-danger"
+                                style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}
+                              >
+                                <Trash2 size={14} />
+                                Cancel Order
+                              </button>
+                            )}
+
+                            {/* Invoice Bill button if ready or completed */}
+                            {(order.status === 'ready' || order.status === 'completed') && (
+                              <button
+                                type="button"
+                                onClick={() => setActiveInvoiceOrder(order)}
+                                className="btn btn-success"
+                                style={{ fontSize: '0.8rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                              >
+                                <Receipt size={14} />
+                                View Bill & Invoice
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
-                      {/* Stepper for Active, details for inactive */}
-                      {renderStatusStepper(order.status)}
-
-                      {/* Action buttons inside card */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', borderTop: '1px solid var(--border-muted)', paddingTop: '1rem' }}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            // View prescription modal
-                            setActiveInvoiceOrder(order);
-                          }}
-                          className="btn btn-secondary"
-                          style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}
-                        >
-                          <FileText size={14} />
-                          View Prescription Sheet
-                        </button>
-
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          {/* Cancel button if just submitted */}
-                          {order.status === 'submitted' && (
-                            <button
-                              type="button"
-                              onClick={() => handleCancelOrder(order.id)}
-                              className="btn btn-danger"
-                              style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}
-                            >
-                              <Trash2 size={14} />
-                              Cancel Order
-                            </button>
-                          )}
-
-                          {/* Invoice Bill button if ready or completed */}
-                          {(order.status === 'ready' || order.status === 'completed') && (
-                            <button
-                              type="button"
-                              onClick={() => setActiveInvoiceOrder(order)}
-                              className="btn btn-success"
-                              style={{ fontSize: '0.8rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
-                            >
-                              <Receipt size={14} />
-                              View Bill & Invoice
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
-
-        </div>
+        )}
       </main>
 
       {/* Invoice Receipt Modal */}
