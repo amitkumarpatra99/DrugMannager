@@ -64,6 +64,66 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
     setInventory(getStoredInventory());
   };
 
+  const handleBulkRefillLowStock = () => {
+    const currentInventory = getStoredInventory();
+    const updated = currentInventory.map(med => {
+      if (med.stock < 10) {
+        return { ...med, stock: med.stock + 50 };
+      }
+      return med;
+    });
+    setStoredInventory(updated);
+    addActivityLog(`Bulk stock refill (+50 units) performed for all low stock drugs by pharmacy staff.`, 'success');
+    loadData();
+  };
+
+  const handleStartEditMed = (med: Medicine) => {
+    setEditingMed(med);
+    setEditMedName(med.name);
+    setEditMedPrice(med.price);
+    setEditMedStock(med.stock);
+    setEditMedDosage(med.dosage);
+    setEditMedCategory(med.category);
+  };
+
+  const handleSaveMedEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMed) return;
+    if (!editMedName || editMedPrice <= 0 || editMedStock < 0 || !editMedDosage || !editMedCategory) {
+      alert('Please fill out all fields correctly.');
+      return;
+    }
+
+    const currentInventory = getStoredInventory();
+    const updated = currentInventory.map(m => {
+      if (m.id === editingMed.id) {
+        return {
+          ...m,
+          name: editMedName,
+          price: editMedPrice,
+          stock: editMedStock,
+          dosage: editMedDosage,
+          category: editMedCategory
+        };
+      }
+      return m;
+    });
+    setStoredInventory(updated);
+    addActivityLog(`Medicine details updated for ${editMedName} by pharmacy staff.`, 'info');
+    setEditingMed(null);
+    loadData();
+  };
+
+  const handleDeleteMedicine = (medId: string, medName: string) => {
+    if (confirm(`Are you sure you want to permanently delete '${medName}' from the medicine catalog?`)) {
+      const current = getStoredInventory();
+      const updated = current.filter(m => m.id !== medId);
+      setStoredInventory(updated);
+      addActivityLog(`Medicine '${medName}' deleted from store inventory by pharmacy staff.`, 'danger');
+      loadData();
+    }
+  };
+
   const handleUpdateOrderStatus = (orderId: string, nextStatus: OrderStatus) => {
     const allOrders = getStoredOrders();
     const updated = allOrders.map(o => {
