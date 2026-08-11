@@ -39,6 +39,7 @@ export interface Order {
   tax: number;
   createdAt: string;
   billNumber?: string;
+  suggestedItems?: BillItem[];
 }
 
 export interface ResetRequest {

@@ -5,7 +5,7 @@ import {
 } from '../utils/storage';
 import { 
   Pill, Clock, CheckCircle, Plus, Search, Eye, ShoppingBag, 
-  X, ClipboardList, Check, Calendar, LogOut, Menu
+  X, ClipboardList, Check, Calendar, LogOut, Menu, Sparkles, AlertCircle, Trash2, Edit
 } from 'lucide-react';
 
 interface ShopDashboardProps {
@@ -38,6 +38,14 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
   const [newMedStock, setNewMedStock] = useState<number>(50);
   const [newMedDosage, setNewMedDosage] = useState<string>('1 daily');
   const [newMedCategory, setNewMedCategory] = useState<string>('General');
+
+  // Edit medicine state
+  const [editingMed, setEditingMed] = useState<Medicine | null>(null);
+  const [editMedName, setEditMedName] = useState<string>('');
+  const [editMedPrice, setEditMedPrice] = useState<number>(0);
+  const [editMedStock, setEditMedStock] = useState<number>(0);
+  const [editMedDosage, setEditMedDosage] = useState<string>('');
+  const [editMedCategory, setEditMedCategory] = useState<string>('');
 
   useEffect(() => {
     loadData();
