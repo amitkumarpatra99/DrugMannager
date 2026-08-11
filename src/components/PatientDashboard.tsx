@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import type { User, Order, OrderStatus } from '../types';
-import { getStoredOrders, setStoredOrders, addActivityLog } from '../utils/storage';
+import type { User, Order, OrderStatus, BillItem } from '../types';
+import { getStoredOrders, setStoredOrders, addActivityLog, getStoredInventory } from '../utils/storage';
 import { 
   Upload, Clock, FileText, CheckCircle, AlertCircle, ShoppingBag, 
   Trash2, Receipt, LogOut, User as UserIcon, Calendar, Printer,
-  Menu, X, Sparkles
+  Menu, X, Sparkles, Pill, Search
 } from 'lucide-react';
 
 interface PatientDashboardProps {
@@ -17,6 +17,15 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
   const [prescBase64, setPrescBase64] = useState<string>('');
   const [prescFileName, setPrescFileName] = useState<string>('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  
+  // Navigation Tabs
+  const [activeTab, setActiveTab] = useState<'orders' | 'catalog'>('orders');
+  const [catalogSearch, setCatalogSearch] = useState<string>('');
+  
+  // Simulated AI Scanner States
+  const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [scannedItems, setScannedItems] = useState<BillItem[]>([]);
+  const [selectedScanItemIds, setSelectedScanItemIds] = useState<string[]>([]);
   
   // Pickup Times
   const [pickupStart, setPickupStart] = useState<string>('09:00');
@@ -47,6 +56,73 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
     setOrders(patientOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
   };
 
+  const runAIScan = (fileName: string) => {
+    setIsScanning(true);
+    setScannedItems([]);
+    setSelectedScanItemIds([]);
+    
+    setTimeout(() => {
+      const inv = getStoredInventory();
+      const matches: BillItem[] = [];
+      
+      if (fileName === 'Generated_Rx_Prescription.png') {
+        // Dolo (med-1) and Novamox (med-2)
+        const dolo = inv.find(m => m.id === 'med-1');
+        const novamox = inv.find(m => m.id === 'med-2');
+        
+        if (dolo) {
+          matches.push({
+            medicineId: dolo.id,
+            name: dolo.name,
+            price: dolo.price,
+            quantity: 10
+          });
+        }
+        if (novamox) {
+          matches.push({
+            medicineId: novamox.id,
+            name: novamox.name,
+            price: novamox.price,
+            quantity: 15
+          });
+        }
+      } else {
+        // Try file name keywords
+        const nameLower = fileName.toLowerCase();
+        let found = false;
+        
+        if (nameLower.includes('dolo') || nameLower.includes('paracetamol')) {
+          const dolo = inv.find(m => m.id === 'med-1');
+          if (dolo) { matches.push({ medicineId: dolo.id, name: dolo.name, price: dolo.price, quantity: 10 }); found = true; }
+        }
+        if (nameLower.includes('cough') || nameLower.includes('alex')) {
+          const syrup = inv.find(m => m.id === 'med-12');
+          if (syrup) { matches.push({ medicineId: syrup.id, name: syrup.name, price: syrup.price, quantity: 2 }); found = true; }
+        }
+        if (nameLower.includes('novamox') || nameLower.includes('amoxicillin')) {
+          const nov = inv.find(m => m.id === 'med-2');
+          if (nov) { matches.push({ medicineId: nov.id, name: nov.name, price: nov.price, quantity: 15 }); found = true; }
+        }
+        if (nameLower.includes('vitamin') || nameLower.includes('zincovit') || nameLower.includes('limcee')) {
+          const vit = inv.find(m => m.id === 'med-11') || inv.find(m => m.id === 'med-15');
+          if (vit) { matches.push({ medicineId: vit.id, name: vit.name, price: vit.price, quantity: 10 }); found = true; }
+        }
+        
+        // Default matches if none found
+        if (!found) {
+          const dolo = inv.find(m => m.id === 'med-1') || inv[0];
+          const zinc = inv.find(m => m.id === 'med-11') || inv[1];
+          if (dolo) matches.push({ medicineId: dolo.id, name: dolo.name, price: dolo.price, quantity: 5 });
+          if (zinc) matches.push({ medicineId: zinc.id, name: zinc.name, price: zinc.price, quantity: 10 });
+        }
+      }
+      
+      setScannedItems(matches);
+      setSelectedScanItemIds(matches.map(m => m.medicineId));
+      setIsScanning(false);
+    }, 1500);
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -58,6 +134,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
       const reader = new FileReader();
       reader.onload = () => {
         setPrescBase64(reader.result as string);
+        runAIScan(file.name);
       };
       reader.readAsDataURL(file);
     }
@@ -65,34 +142,28 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
 
   const generateMockPrescription = () => {
     setError('');
-    // Create a mock canvas prescription card
     const canvas = document.createElement('canvas');
     canvas.width = 400;
     canvas.height = 300;
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      // Draw background
       ctx.fillStyle = '#f9fafb';
       ctx.fillRect(0, 0, 400, 300);
       
-      // Draw border
       ctx.strokeStyle = '#e5e7eb';
       ctx.lineWidth = 10;
       ctx.strokeRect(5, 5, 390, 290);
       
-      // Draw Rx Symbol
       ctx.fillStyle = '#111827';
       ctx.font = 'bold 36px Times New Roman';
       ctx.fillText('Rx', 25, 60);
       
-      // Header info
       ctx.font = 'bold 14px Outfit, sans-serif';
       ctx.fillText('METRO CLINIC - Dr. A. K. Roy', 120, 35);
       ctx.font = '10px Outfit, sans-serif';
       ctx.fillStyle = '#4b5563';
       ctx.fillText('Reg No: MCI-99281 | Tel: 555-0199', 120, 50);
       
-      // Line divider
       ctx.strokeStyle = '#d1d5db';
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -100,20 +171,17 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
       ctx.lineTo(380, 70);
       ctx.stroke();
       
-      // Patient Info
       ctx.font = '12px Outfit, sans-serif';
       ctx.fillStyle = '#111827';
       ctx.fillText(`Patient: ${user.name || 'Anonymous Patient'}`, 25, 95);
       ctx.fillText(`Contact: ${user.emailOrPhone}`, 25, 115);
       ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 260, 95);
       
-      // Line divider
       ctx.beginPath();
       ctx.moveTo(20, 130);
       ctx.lineTo(380, 130);
       ctx.stroke();
       
-      // Medicines
       ctx.font = 'italic bold 14px Times New Roman';
       ctx.fillText('1. Tab. Paracetamol 650mg (Dolo) - Qty: 10', 40, 160);
       ctx.font = '10px Outfit, sans-serif';
@@ -127,7 +195,6 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
       ctx.fillStyle = '#4b5563';
       ctx.fillText('   Dosage: 1 tab three times daily for 5 days.', 40, 220);
       
-      // Footer signature
       ctx.font = 'bold 12px Times New Roman';
       ctx.fillStyle = '#9ca3af';
       ctx.fillText('[ Signed Dr. Roy ]', 260, 265);
@@ -136,6 +203,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
     setPrescBase64(canvas.toDataURL());
     setPrescFileName('Generated_Rx_Prescription.png');
     setSuccess('Mock prescription sheet generated successfully!');
+    runAIScan('Generated_Rx_Prescription.png');
     setTimeout(() => setSuccess(''), 3000);
   };
 
@@ -154,7 +222,6 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
       return;
     }
 
-    // Parse timing comparison
     const [sH, sM] = pickupStart.split(':').map(Number);
     const [eH, eM] = pickupEnd.split(':').map(Number);
     if (sH > eH || (sH === eH && sM >= eM)) {
@@ -163,6 +230,15 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
     }
 
     const allOrders = getStoredOrders();
+    const suggested: BillItem[] = scannedItems
+      .filter(item => selectedScanItemIds.includes(item.medicineId))
+      .map(item => ({
+        medicineId: item.medicineId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity
+      }));
+
     const newOrder: Order = {
       id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
       patientId: user.id,
@@ -175,7 +251,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
       items: [],
       totalBill: 0,
       tax: 0,
-      createdAt: new Date().toLocaleString()
+      createdAt: new Date().toLocaleString(),
+      suggestedItems: suggested
     };
 
     setStoredOrders([...allOrders, newOrder]);
@@ -183,6 +260,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
     
     setPrescBase64('');
     setPrescFileName('');
+    setScannedItems([]);
+    setSelectedScanItemIds([]);
     setSuccess(`Order ${newOrder.id} submitted! The pharmacy will review and pack your medicines.`);
     loadOrders();
   };
@@ -200,7 +279,6 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
     loadOrders();
   };
 
-  // Helper to draw the stepper
   const renderStatusStepper = (status: OrderStatus) => {
     if (status === 'cancelled') {
       return (
@@ -324,9 +402,15 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
 
         <ul className="nav-menu" style={{ flex: 1 }}>
           <li>
-            <a className="nav-link active" onClick={() => setIsMobileMenuOpen(false)}>
+            <a className={`nav-link ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => { setActiveTab('orders'); setIsMobileMenuOpen(false); }}>
               <ShoppingBag size={18} />
               My Orders & Upload
+            </a>
+          </li>
+          <li>
+            <a className={`nav-link ${activeTab === 'catalog' ? 'active' : ''}`} onClick={() => { setActiveTab('catalog'); setIsMobileMenuOpen(false); }}>
+              <Pill size={18} />
+              Check Medicine Catalog
             </a>
           </li>
         </ul>
@@ -344,7 +428,9 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ user, onLogo
             Hello, <span className="gradient-text">{user.name || 'Guest Patient'}</span>
           </h1>
           <p style={{ color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-            Upload your prescription, schedule your visiting time, and we'll have your medicine packed with the bill ready for pickup.
+            {activeTab === 'orders' 
+              ? "Upload your prescription, schedule your visiting time, and we'll have your medicine packed with the bill ready for pickup."
+              : "Search through the pharmacy catalog to check real-time drug pricing, dosage instructions, and inventory availability."}
           </p>
         </header>
 
