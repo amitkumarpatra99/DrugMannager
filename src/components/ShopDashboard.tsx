@@ -410,6 +410,84 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
           </div>
         </section>
 
+        {/* Visual Sales Chart */}
+        {activeTab === 'timeline' && (
+          <section className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Clock size={16} style={{ color: 'var(--clr-primary)' }} />
+              Today's Sales Revenue Trend (INR)
+            </h3>
+            <div style={{ position: 'relative', height: '180px', width: '100%' }}>
+              <svg viewBox="0 0 500 180" width="100%" height="100%" style={{ overflow: 'visible' }}>
+                <defs>
+                  <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--clr-primary)" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="var(--clr-primary)" stopOpacity="0" />
+                  </linearGradient>
+                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                </defs>
+                <line x1="20" y1="20" x2="480" y2="20" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                <line x1="20" y1="60" x2="480" y2="60" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                <line x1="20" y1="100" x2="480" y2="100" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                <line x1="20" y1="140" x2="480" y2="140" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+
+                <path d={(() => {
+                  const data = [
+                    { val: 150 }, { val: 320 }, { val: 280 }, { val: 620 }, { val: 480 }, { val: salesTodayTotal }
+                  ];
+                  const max = Math.max(...data.map(d => d.val), 100) * 1.15;
+                  const pts = data.map((d, i) => {
+                    const x = (i / 5) * 460 + 20;
+                    const y = 140 - (d.val / max) * 110;
+                    return { x, y };
+                  });
+                  const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                  return `${path} L ${pts[pts.length-1].x} 140 L ${pts[0].x} 140 Z`;
+                })()} fill="url(#salesGrad)" />
+
+                <path d={(() => {
+                  const data = [
+                    { val: 150 }, { val: 320 }, { val: 280 }, { val: 620 }, { val: 480 }, { val: salesTodayTotal }
+                  ];
+                  const max = Math.max(...data.map(d => d.val), 100) * 1.15;
+                  const pts = data.map((d, i) => {
+                    const x = (i / 5) * 460 + 20;
+                    const y = 140 - (d.val / max) * 110;
+                    return { x, y };
+                  });
+                  return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                })()} stroke="var(--clr-primary)" strokeWidth="2.5" fill="none" filter="url(#glow)" />
+
+                {(() => {
+                  const data = [
+                    { label: '09:00', val: 150 },
+                    { label: '11:00', val: 320 },
+                    { label: '13:00', val: 280 },
+                    { label: '15:00', val: 620 },
+                    { label: '17:00', val: 480 },
+                    { label: 'Now', val: salesTodayTotal }
+                  ];
+                  const max = Math.max(...data.map(d => d.val), 100) * 1.15;
+                  return data.map((d, i) => {
+                    const x = (i / 5) * 460 + 20;
+                    const y = 140 - (d.val / max) * 110;
+                    return (
+                      <g key={i}>
+                        <circle cx={x} cy={y} r="4" fill="var(--bg-popover)" stroke="var(--clr-primary)" strokeWidth="2" />
+                        <text x={x} y={y - 10} textAnchor="middle" fill="var(--text-primary)" fontSize="8" fontWeight="600">₹{d.val.toFixed(0)}</text>
+                        <text x={x} y="155" textAnchor="middle" fill="var(--text-secondary)" fontSize="8">{d.label}</text>
+                      </g>
+                    );
+                  });
+                })()}
+              </svg>
+            </div>
+          </section>
+        )}
+
         {activeTab === 'timeline' ? (
           <div className="grid-split-2-1">
             
@@ -592,6 +670,39 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
               </button>
             </div>
 
+            {/* Low stock bulk action alert banner */}
+            {inventory.some(m => m.stock < 10) && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                background: 'rgba(239, 68, 68, 0.05)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                borderRadius: 'var(--radius-md)',
+                padding: '0.85rem 1.25rem',
+                marginBottom: '1.5rem',
+                fontSize: '0.85rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--clr-danger)' }}>
+                  <AlertCircle size={16} />
+                  <span>Alert: You have {inventory.filter(m => m.stock < 10).length} medicine(s) running low on stock.</span>
+                </div>
+                <button
+                  onClick={handleBulkRefillLowStock}
+                  className="btn btn-secondary"
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    fontSize: '0.75rem',
+                    borderColor: 'rgba(239, 68, 68, 0.3)',
+                    color: 'var(--clr-danger)',
+                    background: 'rgba(239, 68, 68, 0.05)'
+                  }}
+                >
+                  ⚡ Bulk Refill (+50 Units)
+                </button>
+              </div>
+            )}
+
             {/* Search inventory */}
             <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
               <Search size={16} style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-muted)' }} />
@@ -637,40 +748,20 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
                         <td style={{ textAlign: 'center' }}>
                           <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'center' }}>
                             <button
-                              onClick={() => {
-                                const addQty = prompt(`Enter units to add to stock for ${med.name}:`, '50');
-                                if (addQty !== null) {
-                                  const parsed = parseInt(addQty, 10);
-                                  if (!isNaN(parsed) && parsed > 0) {
-                                    const updated = inventory.map(m => m.id === med.id ? { ...m, stock: m.stock + parsed } : m);
-                                    setStoredInventory(updated);
-                                    addActivityLog(`Stock increased for ${med.name} by +${parsed} units.`, 'success');
-                                    loadData();
-                                  }
-                                }
-                              }}
+                              onClick={() => handleStartEditMed(med)}
                               className="btn btn-secondary"
-                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
+                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.2rem' }}
                             >
-                              + Refill
+                              <Edit size={12} />
+                              Edit
                             </button>
                             <button
-                              onClick={() => {
-                                const newPrice = prompt(`Enter new price (₹) for ${med.name}:`, med.price.toString());
-                                if (newPrice !== null) {
-                                  const parsed = parseFloat(newPrice);
-                                  if (!isNaN(parsed) && parsed > 0) {
-                                    const updated = inventory.map(m => m.id === med.id ? { ...m, price: parsed } : m);
-                                    setStoredInventory(updated);
-                                    addActivityLog(`Price updated for ${med.name} to ₹${parsed}.`, 'info');
-                                    loadData();
-                                  }
-                                }
-                              }}
-                              className="btn btn-secondary"
-                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
+                              onClick={() => handleDeleteMedicine(med.id, med.name)}
+                              className="btn btn-danger"
+                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.2rem' }}
                             >
-                              ₹ Price
+                              <Trash2 size={12} />
+                              Delete
                             </button>
                           </div>
                         </td>
@@ -755,6 +846,74 @@ export const ShopDashboard: React.FC<ShopDashboardProps> = ({ user, onLogout }) 
                   </p>
                 </div>
               </div>
+
+              {/* AI Suggestions alert & import */}
+              {selectedOrderForBill.suggestedItems && selectedOrderForBill.suggestedItems.length > 0 && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  background: 'rgba(0, 242, 254, 0.05)',
+                  border: '1px solid rgba(0, 242, 254, 0.2)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '0.85rem 1.25rem',
+                  marginBottom: '1.25rem',
+                  fontSize: '0.85rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--clr-primary)' }}>
+                    <Sparkles size={16} />
+                    <span>AI matched {selectedOrderForBill.suggestedItems.length} medicine suggestions.</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const suggestions = selectedOrderForBill.suggestedItems || [];
+                      const inventoryList = getStoredInventory();
+                      const itemsToSet: BillItem[] = [];
+                      let warning = '';
+                      
+                      suggestions.forEach(sug => {
+                        const invItem = inventoryList.find(i => i.id === sug.medicineId);
+                        if (invItem) {
+                          if (invItem.stock >= sug.quantity) {
+                            itemsToSet.push({
+                              medicineId: sug.medicineId,
+                              name: sug.name,
+                              price: sug.price,
+                              quantity: sug.quantity
+                            });
+                          } else if (invItem.stock > 0) {
+                            itemsToSet.push({
+                              medicineId: sug.medicineId,
+                              name: sug.name,
+                              price: sug.price,
+                              quantity: invItem.stock
+                            });
+                            warning += `Only ${invItem.stock} of ${sug.name} available (requested ${sug.quantity}). `;
+                          } else {
+                            warning += `${sug.name} is out of stock. `;
+                          }
+                        }
+                      });
+                      
+                      setBillItems(itemsToSet);
+                      if (warning) {
+                        setBillError(`Suggestions imported with adjustments: ${warning}`);
+                      } else {
+                        addActivityLog(`AI suggestion list auto-populated into invoice for order ${selectedOrderForBill.id}.`, 'info');
+                      }
+                    }}
+                    className="btn btn-primary"
+                    style={{
+                      padding: '0.35rem 0.75rem',
+                      fontSize: '0.75rem',
+                      boxShadow: 'none'
+                    }}
+                  >
+                    ⚡ Auto-Fill Bill
+                  </button>
+                </div>
+              )}
 
               {/* Billing error details */}
               {billError && (
